@@ -126,4 +126,50 @@ public class CatalogDaoTest {
         assertEquals(bookId, queriedItem.getBookId(), "Expected query to look for provided bookId");
         assertEquals(1, requestCaptor.getValue().getLimit(), "Expected query to have a limit set");
     }
+
+    @Test
+    public void removeBookFromCatalog_bookInactive_throwsException() {
+        // GIVEN
+        String bookId = "book.123";
+        CatalogItemVersion item = new CatalogItemVersion();
+        item.setInactive(true);
+        item.setBookId(bookId);
+        item.setVersion(1);
+
+        when(dynamoDbMapper.query(eq(CatalogItemVersion.class), any(DynamoDBQueryExpression.class))).thenReturn(list);
+        when(list.isEmpty()).thenReturn(false);
+        when(list.get(0)).thenReturn(item);
+
+        // WHEN && THEN
+        assertThrows(BookNotFoundException.class, () -> catalogDao.removeBookFromCatalog(bookId),
+                "Expected BookNotFoundException to be thrown for an invalid bookId.");
+    }
+
+    @Test
+    public void removeBookFromCatalog_oneVersion_returnVersion1() {
+        // GIVEN
+        String bookId = "book.123";
+        CatalogItemVersion item = new CatalogItemVersion();
+        item.setInactive(false);
+        item.setBookId(bookId);
+        item.setVersion(1);
+        ArgumentCaptor<DynamoDBQueryExpression> requestCaptor = ArgumentCaptor.forClass(DynamoDBQueryExpression.class);
+
+        when(dynamoDbMapper.query(eq(CatalogItemVersion.class), any(DynamoDBQueryExpression.class))).thenReturn(list);
+        when(list.isEmpty()).thenReturn(false);
+        when(list.get(0)).thenReturn(item);
+
+        // WHEN
+        CatalogItemVersion book = catalogDao.removeBookFromCatalog(bookId);
+
+        // THEN
+        assertEquals(bookId, book.getBookId());
+        assertEquals(1, book.getVersion(), "Expected version 1 of book to be returned");
+        assertTrue(book.isInactive(), "Expected book to be inactive.");
+
+        verify(dynamoDbMapper).query(eq(CatalogItemVersion.class), requestCaptor.capture());
+        CatalogItemVersion queriedItem = (CatalogItemVersion) requestCaptor.getValue().getHashKeyValues();
+        assertEquals(bookId, queriedItem.getBookId(), "Expected query to look for provided bookId");
+        assertEquals(1, requestCaptor.getValue().getLimit(), "Expected query to have a limit set");
+    }
 }

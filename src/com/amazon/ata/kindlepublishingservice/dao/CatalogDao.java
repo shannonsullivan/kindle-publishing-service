@@ -7,9 +7,13 @@ import com.amazon.ata.kindlepublishingservice.utils.KindlePublishingUtils;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.inject.Inject;
 
 public class CatalogDao {
@@ -57,5 +61,19 @@ public class CatalogDao {
             return null;
         }
         return results.get(0);
+    }
+
+    /**
+     * Sets the latest version of the book from the catalog corresponding to the specified book id as inactive.
+     * Throws a BookNotFoundException if the latest version is not active or no version is found.
+     * @param bookId Id associated with the book.
+     * @return The corresponding CatalogItem from the catalog table.
+     */
+
+    public CatalogItemVersion removeBookFromCatalog(String bookId) {
+        CatalogItemVersion book = getBookFromCatalog(bookId);
+        book.setInactive(true);
+
+        return book;
     }
 }
