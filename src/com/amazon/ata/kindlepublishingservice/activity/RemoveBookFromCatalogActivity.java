@@ -32,13 +32,15 @@ public class RemoveBookFromCatalogActivity {
      *
      * @param removeBookFromCatalogRequest Request object containing the book ID associated
      *                                     with the book to set status to isInactive.
-     * @return RemoveBookFromCatalogResponse Response object containing the requested book.
+     * @return RemoveBookFromCatalogResponse Response containing empty object.
      */
 
     public RemoveBookFromCatalogResponse execute(final RemoveBookFromCatalogRequest removeBookFromCatalogRequest) {
         CatalogItemVersion catalogItem = catalogDao.removeBookFromCatalog(removeBookFromCatalogRequest.getBookId());
-        return RemoveBookFromCatalogResponse.builder()
-                .withBook(CatalogItemConverter.toBook(catalogItem))
-                .build();
+        return new RemoveBookFromCatalogResponse();
+//        CatalogItemVersion catalogItem = catalogDao.removeBookFromCatalog(removeBookFromCatalogRequest.getBookId());
+//        return RemoveBookFromCatalogResponse.builder()
+//                .withBook(CatalogItemConverter.toBook(catalogItem))
+//                .build();
     }
 }

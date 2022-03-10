@@ -65,7 +65,7 @@ public class CatalogDao {
     public CatalogItemVersion removeBookFromCatalog(String bookId) {
         CatalogItemVersion book = getBookFromCatalog(bookId);
         book.setInactive(true);
-        dynamoDbMapper.save(bookId);
+        dynamoDbMapper.save(book);
 
         return book;
     }
