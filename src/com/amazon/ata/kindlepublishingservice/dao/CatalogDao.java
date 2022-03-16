@@ -69,4 +69,17 @@ public class CatalogDao {
 
         return book;
     }
+
+    /**
+     * Checks if specified book id exists in catalog.
+     * Throws a BookNotFoundException if book doesn't exist.
+     * @param bookId Id associated with the book.
+     */
+    public void validateBookExists(String bookId) {
+        CatalogItemVersion book = getLatestVersionOfBook(bookId);
+
+        if (book == null) {
+            throw new BookNotFoundException(String.format("No book found for id: %s", bookId));
+        }
+    }
 }

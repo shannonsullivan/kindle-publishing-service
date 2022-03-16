@@ -38,7 +38,7 @@ public class RemoveBookFromCatalogActivityTest {
     }
 
     @Test
-    public void execute_bookExists_returnsBookIsInactive() {
+    public void execute_bookExists_returnsEmptyObject() {
         // GIVEN
         RemoveBookFromCatalogRequest request = RemoveBookFromCatalogRequest
                 .builder()
@@ -60,9 +60,6 @@ public class RemoveBookFromCatalogActivityTest {
 
         // THEN
         assertNotNull(response, "Expected request to return a non-null response.");
-        assertNotNull(response.getBook(), "Expected a non null book in the response.");
-        Book book = response.getBook();
-        assertEquals(BOOK_ID, book.getBookId(), "Expected book in response to contain id passed in request.");
     }
 
     @Test

@@ -248,7 +248,7 @@ Below are the data models for the DynamoDB tables.
 
 ## Class Diagram
 
-<**MT01.MILESTONE 1**>
+![Class Diagram](src/resources/classDiagram.png)
 
 [Link to class diagram PUML file](src/resources/mastery-task1-kindle-publishing-CD.puml)
 
@@ -263,7 +263,6 @@ Below are the data models for the DynamoDB tables.
 
 ### RemoveBookFromCatalog
 
-<**MT01.MILESTONE 1**>
 ![Sequence diagram for removeBook API](src/resources/removeBook.png)
 
 [Link to sequence diagram PUML file](src/resources/mastery-task1-remove-book-SD.puml)

@@ -1,8 +1,6 @@
 package com.amazon.ata.kindlepublishingservice.activity;
 
-import com.amazon.ata.kindlepublishingservice.converters.CatalogItemConverter;
 import com.amazon.ata.kindlepublishingservice.dao.CatalogDao;
-import com.amazon.ata.kindlepublishingservice.dynamodb.models.CatalogItemVersion;
 import com.amazon.ata.kindlepublishingservice.models.requests.RemoveBookFromCatalogRequest;
 import com.amazon.ata.kindlepublishingservice.models.response.RemoveBookFromCatalogResponse;
 import javax.inject.Inject;
@@ -31,16 +29,12 @@ public class RemoveBookFromCatalogActivity {
      * Sets status as isInactive for book associated with the provided book id.
      *
      * @param removeBookFromCatalogRequest Request object containing the book ID associated
-     *                                     with the book to set status to isInactive.
+     *                                     with the book to remove.
      * @return RemoveBookFromCatalogResponse Response containing empty object.
      */
 
     public RemoveBookFromCatalogResponse execute(final RemoveBookFromCatalogRequest removeBookFromCatalogRequest) {
-        CatalogItemVersion catalogItem = catalogDao.removeBookFromCatalog(removeBookFromCatalogRequest.getBookId());
+        catalogDao.removeBookFromCatalog(removeBookFromCatalogRequest.getBookId());
         return new RemoveBookFromCatalogResponse();
-//        CatalogItemVersion catalogItem = catalogDao.removeBookFromCatalog(removeBookFromCatalogRequest.getBookId());
-//        return RemoveBookFromCatalogResponse.builder()
-//                .withBook(CatalogItemConverter.toBook(catalogItem))
-//                .build();
     }
 }
