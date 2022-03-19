@@ -77,4 +77,26 @@ public class PublishingStatusDao {
         dynamoDbMapper.save(item);
         return item;
     }
+
+    /**
+     * Returns the PublishingStatusItem corresponding with the specified record id.
+     * Throws a PublishingStatusNotFoundException if the item is not found.
+     *
+     * @param publishingStatusId publishingRecordId associated with the item.
+     * @return The corresponding PublishingStatusItem from the table with publishing status.
+     */
+    public List<PublishingStatusItem> getPublishingStatus(String publishingStatusId) {
+        PublishingStatusItem statusItem = new PublishingStatusItem();
+        statusItem.setPublishingRecordId(publishingStatusId);
+
+        DynamoDBQueryExpression<PublishingStatusItem> queryExpression = new DynamoDBQueryExpression<PublishingStatusItem>()
+                .withHashKeyValues(statusItem);
+
+        List<PublishingStatusItem> statusItemList = dynamoDbMapper.query(PublishingStatusItem.class, queryExpression);
+        if (statusItemList.isEmpty()) {
+            throw new PublishingStatusNotFoundException(String.format("No status found for id: %s", publishingStatusId));
+        }
+
+        return statusItemList;
+    }
 }

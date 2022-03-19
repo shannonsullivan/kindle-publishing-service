@@ -32,9 +32,7 @@ public class MasteryTaskThreeTests extends IntegrationTestBase {
      * Ensure the test infra is ready for test run, including creating the client.
      */
     @BeforeEach
-    public void setup() {
-        savePublishingStatuses();
-    }
+    public void setup() { savePublishingStatuses();}
 
     @Test
     public void getPublishingStatus_singleStatus_returnsSingleRecord() {

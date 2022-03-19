@@ -1,6 +1,5 @@
 package com.amazon.ata.kindlepublishingservice.activity;
 
-import com.amazon.ata.kindlepublishingservice.dynamodb.models.CatalogItemVersion;
 import com.amazon.ata.kindlepublishingservice.models.requests.SubmitBookForPublishingRequest;
 import com.amazon.ata.kindlepublishingservice.models.response.SubmitBookForPublishingResponse;
 import com.amazon.ata.kindlepublishingservice.converters.BookPublishRequestConverter;
@@ -11,10 +10,6 @@ import com.amazon.ata.kindlepublishingservice.enums.PublishingRecordStatus;
 import com.amazon.ata.kindlepublishingservice.publishing.BookPublishRequest;
 
 import com.amazon.ata.kindlepublishingservice.publishing.BookPublishRequestManager;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 
@@ -42,6 +37,7 @@ public class SubmitBookForPublishingActivity {
 
     /**
      * Submits the book in the request for publishing.
+     * Throws a BookNotFoundException if book doesn't exist.
      *
      * @param request Request object containing the book data to be published. If the request is updating an existing
      *                book, then the corresponding book id should be provided. Otherwise, the request will be treated
