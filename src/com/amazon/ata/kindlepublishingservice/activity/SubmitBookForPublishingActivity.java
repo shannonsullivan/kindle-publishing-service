@@ -28,6 +28,7 @@ public class SubmitBookForPublishingActivity {
      * Instantiates a new SubmitBookForPublishingActivity object.
      *
      * @param publishingStatusDao PublishingStatusDao to access the publishing status table.
+     * @param catalogDao CatalogDao to access the catalog item table.
      */
     @Inject
     public SubmitBookForPublishingActivity(PublishingStatusDao publishingStatusDao, CatalogDao catalogDao) {
