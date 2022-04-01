@@ -1,19 +1,19 @@
 package com.amazon.ata.kindlepublishingservice.publishing;
 
 import javax.inject.Inject;
-import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- * Class responsible for saving each book publish request allowing the
- * request to be processed in the same order they are submitted.
+ * Class responsible for managing a collection of book publishing requests allowing
+ * the request to be processed in the same order they are submitted.
  */
 public class BookPublishRequestManager {
     private Queue<BookPublishRequest> requestQueue;
 
     @Inject
-    public BookPublishRequestManager() {
-        requestQueue = new LinkedList<>();
+    public BookPublishRequestManager(ConcurrentLinkedQueue<BookPublishRequest> requestQueue) {
+        this.requestQueue = requestQueue;
     }
 
     public void addBookPublishRequest(BookPublishRequest bookPublishRequest) {
@@ -21,9 +21,6 @@ public class BookPublishRequestManager {
     }
 
     public BookPublishRequest getBookPublishRequestToProcess() {
-        if (requestQueue.isEmpty()) {
-            return null;
-        }
-        return requestQueue.peek();
+        return requestQueue.poll();
     }
 }

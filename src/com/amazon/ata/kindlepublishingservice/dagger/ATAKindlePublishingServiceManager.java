@@ -1,5 +1,7 @@
 package com.amazon.ata.kindlepublishingservice.dagger;
 
+import com.amazon.ata.kindlepublishingservice.exceptions.BookNotFoundException;
+import com.amazon.ata.kindlepublishingservice.publishing.BookPublishRequestManager;
 import com.amazon.ata.kindlepublishingservice.publishing.BookPublisher;
 
 import org.apache.logging.log4j.LogManager;
@@ -7,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.concurrent.SubmissionPublisher;
 
 /**
  * The ATAKindlePublishingServiceManager controls initializing, starting, verifying, and stopping the
@@ -34,7 +37,7 @@ public class ATAKindlePublishingServiceManager {
     public void verify() throws Exception {
     }
 
-    public void start() throws Exception {
+    public void start() throws BookNotFoundException {
         bookPublisher.start();
     }
 

@@ -16,7 +16,7 @@ import javax.inject.Singleton;
 @Singleton
 public class BookPublisher {
 
-    private static final Logger log = LogManager.getLogger(BookPublisher.class);
+    private static final Logger LOGGER = LogManager.getLogger(BookPublisher.class);
 
     private final ScheduledExecutorService scheduledExecutorService;
     private final Runnable publishTask;
@@ -39,11 +39,12 @@ public class BookPublisher {
      * Start publishing books.
      */
     public void start() {
+        LOGGER.info("BOOK PUBLISHING START");
         if (isRunning) {
             return;
         }
         isRunning = true;
-        scheduledExecutorService.scheduleWithFixedDelay(publishTask, 0, 1, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(publishTask, 1, 1, TimeUnit.SECONDS);
     }
 
     /**
