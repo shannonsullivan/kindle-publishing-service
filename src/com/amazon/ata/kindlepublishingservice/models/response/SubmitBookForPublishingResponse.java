@@ -48,6 +48,8 @@ public class SubmitBookForPublishingResponse {
             return this;
         }
 
-        public SubmitBookForPublishingResponse build() { return new SubmitBookForPublishingResponse(this); }
+        public SubmitBookForPublishingResponse build() {
+            return new SubmitBookForPublishingResponse(this);
+        }
     }
 }

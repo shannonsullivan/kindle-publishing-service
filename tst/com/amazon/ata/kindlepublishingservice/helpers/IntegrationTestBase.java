@@ -22,7 +22,7 @@ public abstract class IntegrationTestBase {
     // singleton so we set up once and keep the instance across test runs
     private static final KindlePublishingServiceTctTestDao KINDLE_PUBLISHING_SERVICE_TCT_TEST_DAO =
         new KindlePublishingServiceTctTestDao(
-                new DynamoDBMapper(AmazonDynamoDBClientBuilder.standard().withRegion(Regions.US_WEST_2).build()));
+                new DynamoDBMapper(AmazonDynamoDBClientBuilder.standard().withRegion(Regions.US_EAST_2).build()));
     private static String endpointOverride;
     private static String stackName;
     private static String loadBalancerId;
