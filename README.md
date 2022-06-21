@@ -1,71 +1,98 @@
-# Unit 6 Project: Kindle Publishing Service
+## Kindle Publishing Service
 
-### Ambiguity, Complexity, and Scope
+This app provides a service allowing client to publish books to a catalog, access 
+published books in the catalog, and remove published books.
 
-Ambiguity will be increasing from Unit 4’s project as you make your way through the Unit 6 project
-mastery tasks. We’ll assume you’ll be using the design document to understand the requirements and
-how to implement each API, so the tasks will contain fewer details. After walking you through
-something once, we won’t be mentioning it again in each subsequent task. For example, we used Dagger
-in Unit 4, and will again in Unit 6. We’ll walk you through it a bit in mastery task 2, but then
-you’ll be responsible for knowing that this is something you’ll need to think about and update in
-each subsequent task.
+A feature is added to retrieve recommendations related to a book request and check 
+status of book publishing submission.
 
-We’ll also be increasing complexity. We'll be working with threads for the first time, and write a
-new style of API to take advantage of them. We'll also be integrating caching into our project.
 
-Scope will increase slightly. As in last unit, we'll be implementing the entire service, but now
-you'll be responsible for writing the Activity classes as well.
+* Dagger framework provides dependency injection
+* ConcurrentLinkedQueue and asynchronous API calls with multi threading
+* AWS Cloudformation and DynamoDB create collection tables and store data
+* AWS ECS deploys and runs the service
 
-You'll be surrounded by other participants in the same situation as you, so remember to collaborate:
-rely on each other for assistance, and share your own knowledge.
+### Architecture
+* User connects to Publishing Client
+* Client makes API calls to Publishing Service first connecting to AWS load balancer
+* Load balancer forwards request to ECS
+* ECS connects to DynamoDB for data
 
-## The Problem: Amazon Kindle Publishing
+Used Docker to get create a container getting familiar with the application running in an isolated environment
+before using AWS ECS to deploy and run the service.
 
-The Amazon Kindle store provides millions of ebooks to our customers. The process of publishing an
-ebook to the kindle catalog is currently an extremely manual process, which causes a long wait time
-to add a book to the catalog.
+## Publishing Service API Implementation
 
-As a member of the Amazon Kindle team, you will be launching a new service that allows our
-publishing department to convert books into a digital format.
+* `GetBookActivity` communicates with `CatalogDao` that communicates with the `CatalogItemVersions` table, as well as
+  a `RecommendationServiceClient` that communicates with the `RecommendationService`
+* `PublishingStatusDao` sets the publishing status of a book publish request
+* `KindlePublishingUtils` helps with generating `bookIds`, `publishingRecordIds`, and a publishing status message 
+* Custom exceptions `BookNotFoundException` created 
 
-The overview, architecture, and implementation are covered in the [design document here](DESIGN_DOCUMENT.md). Almost all major pieces of software at Amazon first go through an intensive design
-review to answer the question "Are we building the right thing for our customer?".
+### Catalog Versioning
 
-By working on the preparedness and mastery tasks for this project, you will finish the
-implementation of the service described in the document.
+When a book is updated, all previous versions are preserved in catalog with a DynamoDB table `CatalogItemVersions` 
+which has a version number for sort key and boolean field `inactive` to indicate the latest active version.
 
-Carefully read the design document and refer back to it while working on the tasks.
+## Endpoints 
+### `GetBook`
 
-## Project Preparedness Tasks
+* Retrieves latest active version of a book from the catalog with a given book id
+* Returns list of book recommendations related to the book retrieved from the`RecommendationService`
+* Returns book only if the book is currently active
+* `BookNotFoundException` thrown when given book id is not found or not active in catalog
 
-Up to this point, the services we have developed in projects have had synchronous APIs. This
-means that a client makes a request to the service, all of the work required to fulfill this request
-is done, and then a response is returned to the client. In an asynchronous API, a client makes a
-request, the service returns a response immediately, and the service completes the work after the
-client disconnects. This is helpful when the work that needs to be done will take a long amount of
-time. A client will only wait so long for a response, so it is helpful to quickly return a
-successful response acknowledging the work is under way. The service will then continue to work on
-the request as it continues to receive other, new requests. The service is working on these requests
-concurrently - we can think of this as multi-tasking for now. We’ll spend a lot more time in ATA in
-this unit and future units digging into the concept of concurrency much more deeply.
+### `RemoveBookFromCatalog`
 
-In previous units, we were deploying our services to AWS Lambda, which allowed us to save money and
-resources by shutting down when we weren't busy working on a request. In this project, we will be
-using AWS ECS to deploy and run our service. Unlike Lambda, our ECS service will always be up and
-running. This will allow us to do our asynchronous work, since we won’t shut our service down after
-we send back a response. We still have work to do!
+* Removes book from the catalog with a given book id
+* Deactivates latest version of book in the `CatalogItemVersions` table by changing `inactive` attribute to `true`
+* `BookNotFoundException` thrown when given book id is not found or is `inactive`
 
-&nbsp;
+### `SubmitBookForPublishing`
 
-## Project Mastery Tasks
+* Accepts book assets and submits book for processing
+* Updates existing book with book’s associated `bookId`
+    * `bookId` is validated and `BookNotFoundException` is thrown
+* If `bookId` is not present in request, then submission will be considered for a new
+  book, and a new `bookId` will be generated when book is published
+* Inserts a book publishing request into the `BookPublishRequestManager` for asynchronous processing
+* Adds a record into the `PublishingStatus` table with publishing state `QUEUED`
+* Returns a generated `publishingRecordId` associated with the submission
+* If book submission is missing the `title`, `author`, `language`, `genre`, or `text`, a
+  `ValidationException` will be thrown
+  a `ValidationException` will be thrown. You do not have to account for this.
 
-### [Mastery Task 1: Killing me softly](tasks/MasteryTask01.md)
+### `GetPublishingStatus`
 
-### [Mastery Task 2: Submit to the process](tasks/MasteryTask02.md)
+* Accepts a `publishingRecordId` and returns publishing status history of book submission from `PublishingStatus` table
+* A successful publishing request starts in the `QUEUED` state, transitions to `IN_PROGRESS`, and end in `SUCCESSFUL`
+* A failed publishing request starts in the `QUEUED` state, transitions to `IN_PROGRESS`, and end in `FAILED`
+* When a `SUCCESSFUL` `PublishingStatus` has been reached, the `PublishingStatusRecord` will contain a `bookId` 
+* `PublishingRecordFoundException` is thrown when provided `publishingRecordId` is not found in `PublishingStatus` table
 
-### [Mastery Task 3: Query, query on the wall, don’t load one, get them all!](tasks/MasteryTask03.md)
 
-### [Mastery Task 4: Make a run(nable) for it](tasks/MasteryTask04.md)
+## Asynchronous Book Publishing
 
-&nbsp;
+When App starts up, a call is made to `BookPublisher`. This schedules a
+`Runnable` to execute repeatedly while the service runs.
 
+The `Runnable` retrieves a book publish request from `BookPublishRequestManager` and
+perform the steps required for publishing a book into the catalog. For each
+`BookPublishRequest` in the queue, the following steps are performed:
+
+1. Adds an entry to the Publishing Status table with state `IN_PROGRESS`
+2. Performs formatting and conversion of the book
+3. Adds the new book to the `CatalogItemVersion` table
+  1. If this request is updating an existing book:
+    1. The entry in `CatalogItemVersion` will use the same `bookId` but with the
+       version incremented by 1.
+    1. The previously active version of the book will be marked inactive.
+  2. Otherwise, a new `bookId` is generated for the book and the book will be stored in
+     `CatalogItemVersion` as version 1.
+4. Adds an item to the Publishing Status table with state `SUCCESSFUL` if all the processing steps
+   succeed. If an exception is caught while processing, adds an item into the Publishing Status
+   table with state `FAILED` and includes the exception message.
+
+![Sequence diagram for Asynchronous Book Processing](src/resources/processing.png)
+
+*[PlantUML source for diagram](https://tiny.amazon.com/1dasbgpgn/processing)*
